@@ -51,7 +51,7 @@ Here is a list of error codes (Denoted with the ``reason`` parameter in server J
 
 # User JSON Specification
 
-Instances of virtual characters on the NearChat server are retrieved using the following JSON specification. 
+Instances of users on the NearChat server are retrieved using the following JSON specification. 
 
 Example:
 ```
