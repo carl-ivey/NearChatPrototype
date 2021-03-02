@@ -49,3 +49,86 @@ Here is a list of error codes (Denoted with the ``reason`` parameter in server J
     ERR_ACCOUNT_NONEXISTANT
 ```
 
+# User JSON Specification
+
+Instances of virtual characters on the NearChat server are retrieved using the following JSON specification. 
+
+Example:
+```
+{
+    "id":123456789,
+    "username":"MyUsername",
+    "age":18,
+    "gender":"Male",
+    "relationship_status":"Single",
+    "bio":"Sample bio text",
+    "interests":["cars","magic the gathering","rc planes","anime","hiking"],
+    "telegram":"@MyTelegramUsername"
+}
+```
+- ``id`` is a 64-bit integer denoting the internal server id of the account.
+- ``username`` is the username of the account.
+- ``age`` is a 64-bit integer denoting the age of the account user.
+- ``email`` is the e-mail address of the account.
+- ``relationship_status`` is a string w/ the relationship status of the account.
+- ``bio`` is a string w/ the biography text of the account.
+- ``interests`` is a JSON array of strings listing the interests of the user.
+- ``telegram`` is the user's username on the Telegram messaging app.
+
+# Creating an account
+*Description*: Creates an account with the following parameters if none exists with the same details, and returns an access token for the account.
+
+**Required GET/POST parameters**
+- ``mode`` should be set to ``create_account``
+- ``username`` should be set to the username of the account to be created.
+- ``email`` should be set to the email address of the user of the account.
+- ``password`` should be set to the password of the account, in UTF-8 plaintext.
+
+**Example command**
+
+```
+http://SERVER_ADDRESS/NearChat/api.json?mode=create_account&username={username}&email={email}&password={password}
+```
+
+**Example response**
+
+```
+{
+    "token":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "status":"{success | failure}",
+    "reason":"{sample reason message}"
+}
+```
+- ``token`` is the newly-generated access token of the account created.
+- ``status`` indicates whether account creation was successful.
+- ``reason`` indicates the reason for account creation failure.
+- *Notes*: ``token`` and ``reason`` can be NULL/nonexistent.
+
+# Logging into an existing account
+*Description*: Returns an access token for the account with the given parameters below.
+
+**Required GET/POST parameters**
+- ``mode`` should be set to ``login``
+- ``username`` should be set to the username of the account to log into.
+- ``password`` should be set to the password of the account, in UTF-8 plaintext.
+
+**Example command**
+
+```
+http://SERVER_ADDRESS/NearChat/api.json?mode=login&username={username}&password={password}
+```
+
+**Example response**
+
+```
+{
+    "token":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "status":"{success | failure}",
+    "reason":"{sample reason message}"
+}
+```
+- ``token`` is the newly-generated access token of the account logged into.
+- ``status`` indicates whether account login was successful.
+- ``reason`` indicates the reason for login failure.
+- *Notes*: ``token`` and ``reason`` can be NULL/nonexistent.
+
