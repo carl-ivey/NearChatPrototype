@@ -132,3 +132,58 @@ http://SERVER_ADDRESS/NearChat/api.json?mode=login&username={username}&password=
 - ``reason`` indicates the reason for login failure.
 - *Notes*: ``token`` and ``reason`` can be NULL/nonexistent.
 
+# Updating the information of an account
+*Description*: Updates specified fields of the account, such as username, password, email, gender, etc.
+
+**Required GET/POST parameters**
+- ``mode`` should be set to ``update_info``
+- ``token`` should be set to the access token of the logged-in account.
+- ``fields`` should be the new values of the user instance corresponding to the token, in JSON object format.
+
+**Example command**
+
+```
+http://SERVER_ADDRESS/NearChat/api.json?mode=update_info&token={token}&fields={fields}
+```
+
+**Example response**
+
+```
+{
+    "status":"{success | failure}",
+    "reason":"{sample reason message}"
+}
+```
+
+- ``status`` indicates whether the information update was successful.
+- ``reason`` indicates the reason for failure if there is any.
+- *Notes*: ``reason`` can be NULL/nonexistent.
+
+# Updating the geolocation of an account
+*Description*: Updates the longitude and latitude of the account, which are kept private.
+
+**Required GET/POST parameters**
+- ``mode`` should be set to ``update_geo``
+- ``token`` should be set to the access token of the logged-in account.
+- ``lat`` should be the latitude of the phone, a decimal value in degrees. Positive is North, negative is South.
+- ``lon`` should be the longitude of the phone, a decimal value in degrees. Positive is West, negative is East.
+
+**Example command**
+
+```
+http://SERVER_ADDRESS/NearChat/api.json?mode=update_geo&token={token}&lat={lat}&lon={lon}
+```
+
+**Example response**
+
+```
+{
+    "status":"{success | failure}",
+    "reason":"{sample reason message}"
+}
+```
+
+- ``status`` indicates whether the information update was successful.
+- ``reason`` indicates the reason for failure if there is any.
+- *Notes*: ``reason`` can be NULL/nonexistent.
+
