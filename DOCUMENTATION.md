@@ -63,7 +63,8 @@ Example:
     "relationship_status":"Single",
     "bio":"Sample bio text",
     "interests":["cars","magic the gathering","rc planes","anime","hiking"],
-    "telegram":"@MyTelegramUsername"
+    "telegram":"@MyTelegramUsername",
+    "visible":true
 }
 ```
 - ``id`` is a 64-bit integer denoting the internal server id of the account.
@@ -74,6 +75,7 @@ Example:
 - ``bio`` is a string w/ the biography text of the account.
 - ``interests`` is a JSON array of strings listing the interests of the user.
 - ``telegram`` is the user's username on the Telegram messaging app.
+- ``visible`` is whether the user is visible to other users.
 
 # Creating an account
 *Description*: Creates an account with the following parameters if none exists with the same details, and returns an access token for the account.
@@ -160,7 +162,7 @@ http://SERVER_ADDRESS/NearChat/api.json?mode=update_info&token={token}&fields={f
 - *Notes*: ``reason`` can be NULL/nonexistent.
 
 # Updating the geolocation of an account
-*Description*: Updates the longitude and latitude of the account, which are kept private.
+*Description*: Updates the longitude and latitude of the account, which are kept private from other users.
 
 **Required GET/POST parameters**
 - ``mode`` should be set to ``update_geo``
@@ -187,3 +189,56 @@ http://SERVER_ADDRESS/NearChat/api.json?mode=update_geo&token={token}&lat={lat}&
 - ``reason`` indicates the reason for failure if there is any.
 - *Notes*: ``reason`` can be NULL/nonexistent.
 
+# Searching for other users nearby
+*Description*: Returns a JSON array of other users within the search radius.
+
+**Required GET/POST parameters**
+- ``mode`` should be set to ``search_nearby``
+- ``token`` should be set to the access token of the logged-in account.
+- ``lat`` should be the latitude of the phone, a decimal value in degrees. Positive is North, negative is South.
+- ``lon`` should be the longitude of the phone, a decimal value in degrees. Positive is West, negative is East.
+- ``radius`` should be the search radius of the query, in kilometers.
+
+**Example command**
+
+```
+http://SERVER_ADDRESS/NearChat/api.json?mode=search_nearby&token={token}&lat={lat}&lon={lon}
+```
+
+**Example response**
+
+```
+{
+    "results":[
+        {
+            "id":1,
+            "username":"MyUsername",
+            "age":18,
+            "gender":"Male",
+            "relationship_status":"Single",
+            "bio":"Sample bio text",
+            "interests":["cars","magic the gathering","rc planes","anime","hiking"],
+            "telegram":"@MyTelegramUsername",
+            "visible":true
+        },
+        {
+            "id":2,
+            "username":"MyUsername2",
+            "age":19,
+            "gender":"Male",
+            "relationship_status":"Single",
+            "bio":"Sample bio text",
+            "interests":["cars","magic the gathering","rc planes","anime","hiking"],
+            "telegram":"@MyTelegramUsername2",
+            "visible":true
+        }
+    ],
+    "status":"{success | failure}",
+    "reason":"{sample reason message if failure}"
+}
+```
+
+- ``results`` is a JSON array of the users within the search radius of the provided coordinates.
+- ``status`` indicates whether the information update was successful.
+- ``reason`` indicates the reason for failure if there is any.
+- *Notes*: ``reason`` can be NULL/nonexistent.
