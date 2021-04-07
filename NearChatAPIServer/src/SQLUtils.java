@@ -15,7 +15,6 @@ public class SQLUtils
     
     private HashMap<String, Long> apiKeyList;
 
-    public static final String CONNECTION_ADDRESS = "FUCK";
     public static final String USER_TABLE_NAME = "userdatabase";
     public static final String SQL_LOGIN = "root";
     public static final String SQL_PASSWORD = "";
