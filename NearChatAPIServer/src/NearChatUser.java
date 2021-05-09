@@ -53,12 +53,49 @@ public class NearChatUser
 
     public JSONObject toJSONObject()
     {
-        return toJSONObject(true);
+        return toJSONObject(false);
     }
     
     @Override
     public String toString()
     {
         return toJSONObject(true).toString();
+    }
+    
+    /**
+     * A function to return the Haversine distance in a specified unit between two coordinate pairs P1 and P2.
+     * 
+     * @param lat1 the latitude of point P1
+     * @param lon1 the longitude of point P1
+     * @param lat2 the latitude of point P2
+     * @param lon2 the longitude of point P2
+     * @param metric, if true distance unit is in kilometers, if false it's in miles
+     * @return the Haversine distance between points P1 and P2.
+     */
+    private double distance(double lat1, double lon1, double lat2, double lon2, boolean metric)
+    {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        lat1 = Math.toRadians(lat1);
+        lat2 = Math.toRadians(lat2);
+
+        double a = Math.pow(Math.sin(dLat / 2.0), 2) + Math.pow(Math.sin(dLon / 2.0), 2) * Math.cos(lat1) * Math.cos(lat2);
+        double rad = 6371.0; // radius of earth in km
+        double c = 2 * Math.asin(Math.sqrt(a));
+        
+        return metric ? rad * c : rad * c * 0.62137119;
+    }
+
+    /**
+     * A function to return the distance of the furry in kilometers (in relation to another pair of coordinates).
+     *
+     * @param lat1 (the latitude of the measured object in degrees)
+     * @param lon1 (the longitude of the measured object in degrees)
+     * @return the distance in miles between the location of the instance of this Furry class and another pair of coordinates.
+     */
+    public double distanceFromCoords(double lat1, double lon1)
+    {
+        return distance(lat1, lon1, this.lat, this.lon, false);
     }
 }

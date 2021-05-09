@@ -6,7 +6,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import org.json.JSONArray;
@@ -177,6 +179,25 @@ public class SQLUtils
             rs.getString("relationship_status"), rs.getString("bio"),
             rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
             rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
+    }
+
+    public List<NearChatUser> getAllNearChatUsers() throws SQLException
+    {
+        String query = "SELECT rowid, * FROM " + USER_TABLE_NAME + ";";
+        PreparedStatement stmt = sqlConnection.prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
+
+        List<NearChatUser> toReturn = new ArrayList<>();
+
+        while (rs.next())
+        {
+            toReturn.add(new NearChatUser(rs.getInt("rowid"), rs.getString("username"), rs.getInt("age"),
+                rs.getString("gender"), rs.getString("relationship_status"), rs.getString("bio"),
+                rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
+                rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat")));
+        }
+        
+        return toReturn;
     }
 
     public static String hashMD5(String input)

@@ -1,5 +1,8 @@
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -32,7 +35,7 @@ public class APIServlet extends HttpServlet
             sqlUtils.initUserTables();
         // TODO Auto-generated constructor stub
     }
-    
+
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
      *      response)
@@ -81,7 +84,7 @@ public class APIServlet extends HttpServlet
                     case "login":
                         username = request.getParameter("username");
                         password = request.getParameter("password");
-                        
+
                         if (sqlUtils.doLogin(username, password))
                         {
                             String token = sqlUtils.generateAPITokenForAccount(username);
@@ -92,7 +95,7 @@ public class APIServlet extends HttpServlet
                         {
                             putStatus(headNode, false, ErrorReason.ERR_LOGIN_UNSUCCESSFUL);
                         }
-                        
+
                         break;
 
                     case "logout":
@@ -100,30 +103,30 @@ public class APIServlet extends HttpServlet
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
                         }
-                        
+
                         sqlUtils.deregisterAPIToken(accessToken);
                         putStatus(headNode, true);
                         break;
-                        
+
                     case "get_cur_userinfo":
                         if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
                         }
-                        
+
                         String resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
-                        
+
                         if (resolvedUsername == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_INVALID);
                         }
                         else
                         {
-                           JSONObject obj = sqlUtils.getNearChatUser(resolvedUsername).toJSONObject();
-                           System.out.println(obj);
-                           JSONArray arr = new JSONArray();
-                           arr.put(obj);
-                           headNode.put("results", arr);
+                            JSONObject obj = sqlUtils.getNearChatUser(resolvedUsername).toJSONObject();
+                            // System.out.println(obj);
+                            JSONArray arr = new JSONArray();
+                            arr.put(obj);
+                            headNode.put("results", arr);
                         }
 
                     case "update_info":
@@ -132,37 +135,77 @@ public class APIServlet extends HttpServlet
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
                         }
-                        
+
                         resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
-                        
+
                         if (resolvedUsername == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_INVALID);
                         }
                         else
                         {
-                           Map<String, String[]> paramMap = request.getParameterMap();
-                           for (String paramName : paramMap.keySet())
-                           {
-                               if (paramName.equals("username"))
-                               {
-                                   headNode.put("note", "username cannot be changed!");
-                                   continue;
-                               }
-                               
-                               if (paramName.equals("token"))
-                                   continue;
-                               
-                               if (!sqlUtils.columnExists(paramName))
-                                   continue;
-                               
-                               sqlUtils.updateAccountStringInfo(resolvedUsername, paramName, paramMap.get(paramName)[0]);
-                               putStatus(headNode, true);
-                           }
+                            Map<String, String[]> paramMap = request.getParameterMap();
+                            for (String paramName : paramMap.keySet())
+                            {
+                                if (paramName.equals("username"))
+                                {
+                                    headNode.put("note", "username cannot be changed!");
+                                    continue;
+                                }
+
+                                if (paramName.equals("token"))
+                                    continue;
+
+                                if (!sqlUtils.columnExists(paramName))
+                                    continue;
+
+                                sqlUtils.updateAccountStringInfo(resolvedUsername, paramName,
+                                    paramMap.get(paramName)[0]);
+                                putStatus(headNode, true);
+                            }
                         }
                         break;
 
                     case "search_nearby":
+                        if (accessToken == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                        }
+
+                        resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
+
+                        if (resolvedUsername == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_INVALID);
+                        }
+                        else
+                        {
+                            NearChatUser user = sqlUtils.getNearChatUser(resolvedUsername);
+                            double userLat = user.lat;
+                            double userLon = user.lon;
+
+                            List<NearChatUser> allUsers = sqlUtils.getAllNearChatUsers();
+                            List<UserDistancePair> usersByDistance = new ArrayList<>();
+                            
+                            for (NearChatUser cur : allUsers)
+                            {
+                                usersByDistance.add(new UserDistancePair(cur, cur.distanceFromCoords(userLat, userLon)));
+                            }
+                            
+                            Collections.sort(usersByDistance);
+                            
+                            JSONArray toSend = new JSONArray();
+                            double radius = Double.parseDouble(request.getParameter("radius"));
+
+                            for (UserDistancePair curPair : usersByDistance)
+                            {
+                                if (curPair.distance > radius)
+                                    break;
+                                toSend.put(curPair.user.toJSONObject());
+                            }
+                            
+                            headNode.put("results", toSend);
+                        }
                         break;
 
                     default:
@@ -207,6 +250,27 @@ public class APIServlet extends HttpServlet
             head.put("status", "failed");
             head.put("reason", reason);
         }
+    }
+
+    @SuppressWarnings("unused")
+    private static class UserDistancePair implements Comparable<UserDistancePair>
+    {
+        public NearChatUser user;
+        public double distance;
+
+        public UserDistancePair(NearChatUser user, double distance)
+        {
+            this.user = user;
+            this.distance = distance;
+        }
+
+        @Override
+        public int compareTo(APIServlet.UserDistancePair arg0)
+        {
+            // TODO Auto-generated method stub
+            return Double.compare(distance, arg0.distance);
+        }
+
     }
 
 }
