@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -26,7 +27,7 @@ public class APIServlet extends HttpServlet
     public APIServlet() throws SQLException
     {
         super();
-        sqlUtils = new SQLUtils("db.sqlite");
+        sqlUtils = new SQLUtils("C://nearchat//db.sqlite");
         if (!sqlUtils.tableExists("users"))
             sqlUtils.initUserTables();
         // TODO Auto-generated constructor stub
@@ -95,27 +96,44 @@ public class APIServlet extends HttpServlet
                         break;
 
                     case "logout":
-                        String token = request.getParameter("token");
-                        
-                        if (token == null)
+                        if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
                         }
                         
-                        sqlUtils.deregisterAPIToken(token);
+                        sqlUtils.deregisterAPIToken(accessToken);
                         putStatus(headNode, true);
                         break;
+                        
+                    case "get_cur_userinfo":
+                        if (accessToken == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                        }
+                        
+                        String resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
+                        
+                        if (resolvedUsername == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_INVALID);
+                        }
+                        else
+                        {
+                           JSONObject obj = sqlUtils.getNearChatUser(resolvedUsername).toJSONObject();
+                           System.out.println(obj);
+                           JSONArray arr = new JSONArray();
+                           arr.put(obj);
+                           headNode.put("results", arr);
+                        }
 
                     case "update_info":
                     case "update_geo":
-                        token = request.getParameter("token");
-                        
-                        if (token == null)
+                        if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
                         }
                         
-                        String resolvedUsername = sqlUtils.getUsernameFromAPIToken(token);
+                        resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
                         
                         if (resolvedUsername == null)
                         {
@@ -139,6 +157,7 @@ public class APIServlet extends HttpServlet
                                    continue;
                                
                                sqlUtils.updateAccountStringInfo(resolvedUsername, paramName, paramMap.get(paramName)[0]);
+                               putStatus(headNode, true);
                            }
                         }
                         break;

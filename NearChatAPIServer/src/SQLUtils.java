@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.json.JSONArray;
+
 public class SQLUtils
 {
     public Connection sqlConnection = null;
@@ -37,7 +39,7 @@ public class SQLUtils
         apiKeyList = new HashMap<String, String>();
         sqlConnection = DriverManager.getConnection("jdbc:sqlite:" + filePath);
 
-        if (!tableExists("users"))
+        if (!tableExists(USER_TABLE_NAME))
         {
             initUserTables();
         }
@@ -47,7 +49,7 @@ public class SQLUtils
     {
         return sqlConnection.getMetaData().getTables(null, null, tableName, null).next();
     }
-    
+
     public boolean columnExists(String columnName) throws SQLException
     {
         return sqlConnection.getMetaData().getColumns(null, null, USER_TABLE_NAME, columnName).next();
@@ -73,7 +75,7 @@ public class SQLUtils
 
     public boolean doLogin(String username, String password) throws SQLException
     {
-        String query = "SELECT FROM " + USER_TABLE_NAME + " WHERE username = ? AND password = ?;";
+        String query = "SELECT * FROM " + USER_TABLE_NAME + " WHERE username = ? AND password = ?;";
         PreparedStatement stmt = sqlConnection.prepareStatement(query);
         stmt.setString(1, username);
         stmt.setString(2, password);
@@ -119,6 +121,11 @@ public class SQLUtils
         }
     }
 
+    public void deregisterAPIToken(String token)
+    {
+        apiKeyList.remove(token);
+    }
+
     public void updateAccountStringInfo(String username, String parameter, String newInfo) throws SQLException
     {
         String query = "UPDATE " + USER_TABLE_NAME + " SET " + parameter + " = ? WHERE username = ?";
@@ -140,7 +147,7 @@ public class SQLUtils
 
     public boolean usernameTaken(String username) throws SQLException
     {
-        String query = "SELECT FROM " + USER_TABLE_NAME + " WHERE username = ?;";
+        String query = "SELECT * FROM " + USER_TABLE_NAME + " WHERE username = ?;";
         PreparedStatement stmt = sqlConnection.prepareStatement(query);
         stmt.setString(1, username);
         ResultSet rs = stmt.executeQuery();
@@ -149,16 +156,27 @@ public class SQLUtils
 
     public boolean emailTaken(String email) throws SQLException
     {
-        String query = "SELECT FROM " + USER_TABLE_NAME + " WHERE email = ?;";
+        String query = "SELECT * FROM " + USER_TABLE_NAME + " WHERE email = ?;";
         PreparedStatement stmt = sqlConnection.prepareStatement(query);
         stmt.setString(1, email);
         ResultSet rs = stmt.executeQuery();
         return rs.next();
     }
 
-    public void deregisterAPIToken(String token)
+    public NearChatUser getNearChatUser(String username) throws SQLException
     {
-        apiKeyList.remove(token);
+        String query = "SELECT rowid, * FROM " + USER_TABLE_NAME + " WHERE username = ?;";
+        PreparedStatement stmt = sqlConnection.prepareStatement(query);
+        stmt.setString(1, username);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs == null || !rs.next())
+            return null;
+
+        return new NearChatUser(rs.getInt("rowid"), rs.getString("username"), rs.getInt("age"), rs.getString("gender"),
+            rs.getString("relationship_status"), rs.getString("bio"),
+            rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
+            rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
     }
 
     public static String hashMD5(String input)
