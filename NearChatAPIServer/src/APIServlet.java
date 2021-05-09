@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -26,9 +27,11 @@ public class APIServlet extends HttpServlet
     {
         super();
         sqlUtils = new SQLUtils("db.sqlite");
+        if (!sqlUtils.tableExists("users"))
+            sqlUtils.initUserTables();
         // TODO Auto-generated constructor stub
     }
-
+    
     /**
      * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
      *      response)
@@ -43,33 +46,116 @@ public class APIServlet extends HttpServlet
 
         if (mode == null)
         {
-            putStatus(headNode, false, "Mode cannot be empty.");
+            putStatus(headNode, false, ErrorReason.ERR_MODE_EMPTY);
         }
         else
         {
-            switch (mode)
+            try
             {
-                case "create_account":
-                    break;
-                    
-                case "login":
-                    break;
-                    
-                case "logout":
-                    break;
-                    
-                case "update_info":
-                    break;
-                    
-                case "update_geo":
-                    break;
-                    
-                case "search_nearby":
-                    break;
+                switch (mode)
+                {
+                    case "create_account":
+                        String username = request.getParameter("username");
+                        String email = request.getParameter("email");
+                        String password = request.getParameter("password");
+                        boolean usernameTaken = sqlUtils.usernameTaken(username);
+                        boolean emailTaken = sqlUtils.emailTaken(email);
 
-                default:
-                    putStatus(headNode, false, "Mode is not recognized.");
-                    break;
+                        if (usernameTaken || emailTaken)
+                        {
+                            putStatus(headNode, false,
+                                usernameTaken && emailTaken ? ErrorReason.ERR_ACCOUNT_USERNAME_AND_EMAIL_EXISTS
+                                    : usernameTaken ? ErrorReason.ERR_ACCOUNT_USERNAME_EXISTS
+                                        : ErrorReason.ERR_ACCOUNT_EMAIL_EXISTS);
+                        }
+                        else
+                        {
+                            sqlUtils.addUser(email, username, password);
+                            headNode.put("token", sqlUtils.generateAPITokenForAccount(username));
+                            putStatus(headNode, true);
+                        }
+
+                        break;
+
+                    case "login":
+                        username = request.getParameter("username");
+                        password = request.getParameter("password");
+                        
+                        if (sqlUtils.doLogin(username, password))
+                        {
+                            String token = sqlUtils.generateAPITokenForAccount(username);
+                            headNode.put("token", token);
+                            putStatus(headNode, true);
+                        }
+                        else
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_LOGIN_UNSUCCESSFUL);
+                        }
+                        
+                        break;
+
+                    case "logout":
+                        String token = request.getParameter("token");
+                        
+                        if (token == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                        }
+                        
+                        sqlUtils.deregisterAPIToken(token);
+                        putStatus(headNode, true);
+                        break;
+
+                    case "update_info":
+                    case "update_geo":
+                        token = request.getParameter("token");
+                        
+                        if (token == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                        }
+                        
+                        String resolvedUsername = sqlUtils.getUsernameFromAPIToken(token);
+                        
+                        if (resolvedUsername == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_INVALID);
+                        }
+                        else
+                        {
+                           Map<String, String[]> paramMap = request.getParameterMap();
+                           for (String paramName : paramMap.keySet())
+                           {
+                               if (paramName.equals("username"))
+                               {
+                                   headNode.put("note", "username cannot be changed!");
+                                   continue;
+                               }
+                               
+                               if (paramName.equals("token"))
+                                   continue;
+                               
+                               if (!sqlUtils.columnExists(paramName))
+                                   continue;
+                               
+                               sqlUtils.updateAccountStringInfo(resolvedUsername, paramName, paramMap.get(paramName)[0]);
+                           }
+                        }
+                        break;
+
+                    case "search_nearby":
+                        break;
+
+                    default:
+                        putStatus(headNode, false, ErrorReason.ERR_MODE_NOT_RECOGNIZED);
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                headNode.put("exception", e.getMessage());
+                putStatus(headNode, false, ErrorReason.ERR_GENERIC);
             }
         }
 
@@ -91,7 +177,7 @@ public class APIServlet extends HttpServlet
         putStatus(head, successful, null);
     }
 
-    public void putStatus(JSONObject head, boolean successful, String reason)
+    public void putStatus(JSONObject head, boolean successful, ErrorReason reason)
     {
         if (successful)
         {
