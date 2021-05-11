@@ -164,6 +164,14 @@ public class SQLUtils
         ResultSet rs = stmt.executeQuery();
         return rs.next();
     }
+    
+    private NearChatUser getNearChatUserFromResultSet(ResultSet rs) throws SQLException
+    {
+        return new NearChatUser(rs.getLong("rowid"), rs.getString("username"), rs.getInt("age"), rs.getString("gender"),
+            rs.getString("relationship_status"), rs.getString("bio"),
+            rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
+            rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
+    }
 
     public NearChatUser getNearChatUserByUsername(String username) throws SQLException
     {
@@ -175,10 +183,7 @@ public class SQLUtils
         if (rs == null || !rs.next())
             return null;
 
-        return new NearChatUser(rs.getLong("rowid"), rs.getString("username"), rs.getInt("age"), rs.getString("gender"),
-            rs.getString("relationship_status"), rs.getString("bio"),
-            rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
-            rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
+        return getNearChatUserFromResultSet(rs);
     }
     
     public NearChatUser getNearChatUserByID(long id) throws SQLException
@@ -191,10 +196,7 @@ public class SQLUtils
         if (rs == null || !rs.next())
             return null;
 
-        return new NearChatUser(rs.getLong("rowid"), rs.getString("username"), rs.getInt("age"), rs.getString("gender"),
-            rs.getString("relationship_status"), rs.getString("bio"),
-            rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
-            rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
+        return getNearChatUserFromResultSet(rs);
     }
 
     public List<NearChatUser> getAllNearChatUsers() throws SQLException

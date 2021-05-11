@@ -126,13 +126,13 @@ public class APIServlet extends HttpServlet
                             headNode.put("result", obj);
                         }
                         break;
-                        
+
                     case "get_userinfo":
                         if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
                         }
-                        
+
                         resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
 
                         if (resolvedUsername == null)
@@ -143,25 +143,27 @@ public class APIServlet extends HttpServlet
                         {
                             String tgtUsername = request.getParameter("username");
                             String tgtIdStr = request.getParameter("id");
-                            
+
                             int chkSum = (tgtUsername == null ? 1 : 0) + (tgtIdStr == null ? 1 : 0);
-                            
+
                             if (chkSum == 2)
                             {
                                 // both possible parameters are missing
-                                headNode.put("note", "Please provide either an \"id\" parameter or a \"username\" parameter.");
+                                headNode.put("note",
+                                    "Please provide either an \"id\" parameter or a \"username\" parameter.");
                                 putStatus(headNode, false, ErrorReason.ERR_PARAMETERS_MISSING_OR_INVALID);
                             }
                             else if (chkSum == 0)
                             {
                                 // both possible parameters are provided
-                                headNode.put("note", "Please provide ONLY an \"id\" parameter or a \"username\" parameter.");
+                                headNode.put("note",
+                                    "Please provide ONLY an \"id\" parameter or a \"username\" parameter.");
                                 putStatus(headNode, false, ErrorReason.ERR_PARAMETERS_MISSING_OR_INVALID);
                             }
                             else
                             {
                                 NearChatUser tgtUser = null;
-                                
+
                                 if (tgtIdStr != null)
                                 {
                                     // search by ID
@@ -173,20 +175,21 @@ public class APIServlet extends HttpServlet
                                     // search by username
                                     tgtUser = sqlUtils.getNearChatUserByUsername(tgtUsername);
                                 }
-                                
+
                                 if (tgtUser == null)
                                 {
                                     putStatus(headNode, false, ErrorReason.ERR_ACCOUNT_NONEXISTANT);
                                     break;
                                 }
-                                
+
                                 if (!tgtUser.visible && !resolvedUsername.equals(tgtUser.username))
                                 {
-                                    // current account unauthorized to view resolved user
+                                    // current account unauthorized to view
+                                    // resolved user
                                     putStatus(headNode, false, ErrorReason.ERR_ACCESS_PERMISSION_DENIED);
                                     break;
                                 }
-                                
+
                                 JSONObject obj = tgtUser.toJSONObject(true);
                                 headNode.put("result", obj);
                             }
@@ -217,14 +220,47 @@ public class APIServlet extends HttpServlet
                                     continue;
                                 }
 
-                                if (paramName.equals("token"))
+                                if (paramName.equals("token") || paramName.equals("rowid"))
                                     continue;
 
                                 if (!sqlUtils.columnExists(paramName))
                                     continue;
 
-                                sqlUtils.updateAccountStringInfo(resolvedUsername, paramName,
-                                    paramMap.get(paramName)[0]);
+                                String paramInfo = paramMap.get(paramName)[0];
+
+                                if (paramName.equals("visible"))
+                                {
+                                    paramInfo = paramInfo.toLowerCase().equals("true") || paramInfo.equals("1") ? "1"
+                                        : "0";
+                                }
+                                else if (paramName.equals("age"))
+                                {
+                                    // check validity of age integer string
+                                    Integer newAge = parseIntAndReturnNullIfNotInt(paramInfo);
+                                    if (newAge == null)
+                                    {
+                                        continue;
+                                    }
+
+                                    // do not allow underage users!
+                                    if (newAge < 18)
+                                    {
+                                        putStatus(headNode, false, ErrorReason.ERR_USER_UNDERAGE);
+                                        response.getWriter().append(headNode.toString());
+                                        return;
+                                    }
+                                }
+                                else if (paramName.equals("lat") || paramName.equals("lon"))
+                                {
+                                    Double newDouble = parseDoubleAndReturnNullIfNotDouble(paramInfo);
+                                    // check validity of lat/lon double string
+                                    if (newDouble == null)
+                                    {
+                                        continue;
+                                    }
+                                }
+
+                                sqlUtils.updateAccountStringInfo(resolvedUsername, paramName, paramInfo);
                                 putStatus(headNode, true);
                             }
                         }
@@ -237,6 +273,7 @@ public class APIServlet extends HttpServlet
                         }
 
                         resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
+                        NearChatUser loggedInUser = sqlUtils.getNearChatUserByUsername(resolvedUsername);
 
                         if (resolvedUsername == null)
                         {
@@ -247,7 +284,7 @@ public class APIServlet extends HttpServlet
                             String radiusStr = request.getParameter("radius");
                             String latitudeStr = request.getParameter("lat");
                             String longitudeStr = request.getParameter("lon");
-                            
+
                             if (radiusStr == null || latitudeStr == null || longitudeStr == null)
                             {
                                 putStatus(headNode, false, ErrorReason.ERR_PARAMETERS_MISSING_OR_INVALID);
@@ -260,25 +297,26 @@ public class APIServlet extends HttpServlet
 
                                 List<NearChatUser> allUsers = sqlUtils.getAllNearChatUsers();
                                 List<UserDistancePair> usersByDistance = new ArrayList<>();
-                                
+
                                 for (NearChatUser cur : allUsers)
                                 {
-                                    if (!cur.visible)
+                                    if (!cur.visible || loggedInUser.id == cur.id)
                                         continue;
-                                    usersByDistance.add(new UserDistancePair(cur, cur.distanceFromCoords(userLat, userLon)));
+                                    usersByDistance
+                                        .add(new UserDistancePair(cur, cur.distanceFromCoords(userLat, userLon)));
                                 }
-                                
+
                                 Collections.sort(usersByDistance);
-                                
+
                                 JSONArray toSend = new JSONArray();
-                                
+
                                 for (UserDistancePair curPair : usersByDistance)
                                 {
                                     if (curPair.distance > radius)
                                         break;
                                     toSend.put(curPair.user.toJSONObject());
                                 }
-                                
+
                                 headNode.put("results", toSend);
                             }
                         }
@@ -328,7 +366,30 @@ public class APIServlet extends HttpServlet
         }
     }
 
-    @SuppressWarnings("unused")
+    private Integer parseIntAndReturnNullIfNotInt(String str)
+    {
+        try
+        {
+            return Integer.parseInt(str);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+    
+    private Double parseDoubleAndReturnNullIfNotDouble(String str)
+    {
+        try
+        {
+            return Double.parseDouble(str);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
     private static class UserDistancePair implements Comparable<UserDistancePair>
     {
         public NearChatUser user;
