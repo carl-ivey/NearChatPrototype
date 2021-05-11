@@ -180,6 +180,13 @@ public class APIServlet extends HttpServlet
                                     break;
                                 }
                                 
+                                if (!tgtUser.visible && !resolvedUsername.equals(tgtUser.username))
+                                {
+                                    // current account unauthorized to view resolved user
+                                    putStatus(headNode, false, ErrorReason.ERR_ACCESS_PERMISSION_DENIED);
+                                    break;
+                                }
+                                
                                 JSONObject obj = tgtUser.toJSONObject(true);
                                 headNode.put("result", obj);
                             }
@@ -256,6 +263,8 @@ public class APIServlet extends HttpServlet
                                 
                                 for (NearChatUser cur : allUsers)
                                 {
+                                    if (!cur.visible)
+                                        continue;
                                     usersByDistance.add(new UserDistancePair(cur, cur.distanceFromCoords(userLat, userLon)));
                                 }
                                 
