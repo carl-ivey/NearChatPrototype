@@ -147,7 +147,7 @@ public class SQLUtils
         return i;
     }
 
-    public boolean usernameTaken(String username) throws SQLException
+    public boolean usernameExists(String username) throws SQLException
     {
         String query = "SELECT * FROM " + USER_TABLE_NAME + " WHERE username = ?;";
         PreparedStatement stmt = sqlConnection.prepareStatement(query);
@@ -165,7 +165,7 @@ public class SQLUtils
         return rs.next();
     }
 
-    public NearChatUser getNearChatUser(String username) throws SQLException
+    public NearChatUser getNearChatUserByUsername(String username) throws SQLException
     {
         String query = "SELECT rowid, * FROM " + USER_TABLE_NAME + " WHERE username = ?;";
         PreparedStatement stmt = sqlConnection.prepareStatement(query);
@@ -175,7 +175,23 @@ public class SQLUtils
         if (rs == null || !rs.next())
             return null;
 
-        return new NearChatUser(rs.getInt("rowid"), rs.getString("username"), rs.getInt("age"), rs.getString("gender"),
+        return new NearChatUser(rs.getLong("rowid"), rs.getString("username"), rs.getInt("age"), rs.getString("gender"),
+            rs.getString("relationship_status"), rs.getString("bio"),
+            rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
+            rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
+    }
+    
+    public NearChatUser getNearChatUserByID(long id) throws SQLException
+    {
+        String query = "SELECT rowid, * FROM " + USER_TABLE_NAME + " WHERE rowid = ?;";
+        PreparedStatement stmt = sqlConnection.prepareStatement(query);
+        stmt.setLong(1, id);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs == null || !rs.next())
+            return null;
+
+        return new NearChatUser(rs.getLong("rowid"), rs.getString("username"), rs.getInt("age"), rs.getString("gender"),
             rs.getString("relationship_status"), rs.getString("bio"),
             rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
             rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
@@ -191,7 +207,7 @@ public class SQLUtils
 
         while (rs.next())
         {
-            toReturn.add(new NearChatUser(rs.getInt("rowid"), rs.getString("username"), rs.getInt("age"),
+            toReturn.add(new NearChatUser(rs.getLong("rowid"), rs.getString("username"), rs.getInt("age"),
                 rs.getString("gender"), rs.getString("relationship_status"), rs.getString("bio"),
                 rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
                 rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat")));

@@ -3,7 +3,7 @@ import org.json.JSONObject;
 
 public class NearChatUser
 {
-    public int id;
+    public long id;
     public String username;
     public int age;
     public String gender;
@@ -15,7 +15,7 @@ public class NearChatUser
     public double lat;
     public double lon;
 
-    public NearChatUser(int id, String username, int age, String gender, String relationship_status, String bio,
+    public NearChatUser(long id, String username, int age, String gender, String relationship_status, String bio,
         JSONArray interests, String telegram, boolean visible, double lat, double lon)
     {
         this.id = id;

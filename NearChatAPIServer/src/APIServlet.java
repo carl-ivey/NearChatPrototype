@@ -62,7 +62,7 @@ public class APIServlet extends HttpServlet
                         String username = request.getParameter("username");
                         String email = request.getParameter("email");
                         String password = request.getParameter("password");
-                        boolean usernameTaken = sqlUtils.usernameTaken(username);
+                        boolean usernameTaken = sqlUtils.usernameExists(username);
                         boolean emailTaken = sqlUtils.emailTaken(email);
 
                         if (usernameTaken || emailTaken)
@@ -122,12 +122,69 @@ public class APIServlet extends HttpServlet
                         }
                         else
                         {
-                            JSONObject obj = sqlUtils.getNearChatUser(resolvedUsername).toJSONObject();
-                            // System.out.println(obj);
-                            JSONArray arr = new JSONArray();
-                            arr.put(obj);
-                            headNode.put("results", arr);
+                            JSONObject obj = sqlUtils.getNearChatUserByUsername(resolvedUsername).toJSONObject(true);
+                            headNode.put("result", obj);
                         }
+                        break;
+                        
+                    case "get_userinfo":
+                        if (accessToken == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                        }
+                        
+                        resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
+
+                        if (resolvedUsername == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_INVALID);
+                        }
+                        else
+                        {
+                            String tgtUsername = request.getParameter("username");
+                            String tgtIdStr = request.getParameter("id");
+                            
+                            int chkSum = (tgtUsername == null ? 1 : 0) + (tgtIdStr == null ? 1 : 0);
+                            
+                            if (chkSum == 2)
+                            {
+                                // both possible parameters are missing
+                                headNode.put("note", "Please provide either an \"id\" parameter or a \"username\" parameter.");
+                                putStatus(headNode, false, ErrorReason.ERR_PARAMETERS_MISSING_OR_INVALID);
+                            }
+                            else if (chkSum == 0)
+                            {
+                                // both possible parameters are provided
+                                headNode.put("note", "Please provide ONLY an \"id\" parameter or a \"username\" parameter.");
+                                putStatus(headNode, false, ErrorReason.ERR_PARAMETERS_MISSING_OR_INVALID);
+                            }
+                            else
+                            {
+                                NearChatUser tgtUser = null;
+                                
+                                if (tgtIdStr != null)
+                                {
+                                    // search by ID
+                                    long tgtId = Long.parseLong(tgtIdStr);
+                                    tgtUser = sqlUtils.getNearChatUserByID(tgtId);
+                                }
+                                else
+                                {
+                                    // search by username
+                                    tgtUser = sqlUtils.getNearChatUserByUsername(tgtUsername);
+                                }
+                                
+                                if (tgtUser == null)
+                                {
+                                    putStatus(headNode, false, ErrorReason.ERR_ACCOUNT_NONEXISTANT);
+                                    break;
+                                }
+                                
+                                JSONObject obj = tgtUser.toJSONObject(true);
+                                headNode.put("result", obj);
+                            }
+                        }
+                        break;
 
                     case "update_info":
                     case "update_geo":
@@ -180,31 +237,41 @@ public class APIServlet extends HttpServlet
                         }
                         else
                         {
-                            NearChatUser user = sqlUtils.getNearChatUser(resolvedUsername);
-                            double userLat = user.lat;
-                            double userLon = user.lon;
-
-                            List<NearChatUser> allUsers = sqlUtils.getAllNearChatUsers();
-                            List<UserDistancePair> usersByDistance = new ArrayList<>();
+                            String radiusStr = request.getParameter("radius");
+                            String latitudeStr = request.getParameter("lat");
+                            String longitudeStr = request.getParameter("lon");
                             
-                            for (NearChatUser cur : allUsers)
+                            if (radiusStr == null || latitudeStr == null || longitudeStr == null)
                             {
-                                usersByDistance.add(new UserDistancePair(cur, cur.distanceFromCoords(userLat, userLon)));
+                                putStatus(headNode, false, ErrorReason.ERR_PARAMETERS_MISSING_OR_INVALID);
                             }
-                            
-                            Collections.sort(usersByDistance);
-                            
-                            JSONArray toSend = new JSONArray();
-                            double radius = Double.parseDouble(request.getParameter("radius"));
-
-                            for (UserDistancePair curPair : usersByDistance)
+                            else
                             {
-                                if (curPair.distance > radius)
-                                    break;
-                                toSend.put(curPair.user.toJSONObject());
+                                double radius = Double.parseDouble(radiusStr);
+                                double userLat = Double.parseDouble(latitudeStr);
+                                double userLon = Double.parseDouble(longitudeStr);
+
+                                List<NearChatUser> allUsers = sqlUtils.getAllNearChatUsers();
+                                List<UserDistancePair> usersByDistance = new ArrayList<>();
+                                
+                                for (NearChatUser cur : allUsers)
+                                {
+                                    usersByDistance.add(new UserDistancePair(cur, cur.distanceFromCoords(userLat, userLon)));
+                                }
+                                
+                                Collections.sort(usersByDistance);
+                                
+                                JSONArray toSend = new JSONArray();
+                                
+                                for (UserDistancePair curPair : usersByDistance)
+                                {
+                                    if (curPair.distance > radius)
+                                        break;
+                                    toSend.put(curPair.user.toJSONObject());
+                                }
+                                
+                                headNode.put("results", toSend);
                             }
-                            
-                            headNode.put("results", toSend);
                         }
                         break;
 
