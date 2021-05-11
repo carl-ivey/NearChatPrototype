@@ -1,3 +1,4 @@
+import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import org.json.JSONArray;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class SQLUtils
 {
@@ -164,13 +166,20 @@ public class SQLUtils
         ResultSet rs = stmt.executeQuery();
         return rs.next();
     }
-    
+
     private NearChatUser getNearChatUserFromResultSet(ResultSet rs) throws SQLException
     {
+        String interestsStr = rs.getString("interests");
+
+        Gson gson = new Gson();
+        Type listType = new TypeToken<ArrayList<String>>()
+        {
+        }.getType();
+
         return new NearChatUser(rs.getLong("rowid"), rs.getString("username"), rs.getInt("age"), rs.getString("gender"),
             rs.getString("relationship_status"), rs.getString("bio"),
-            rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
-            rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
+            interestsStr == null ? null : gson.fromJson(interestsStr, listType), rs.getString("telegram"),
+            rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
     }
 
     public NearChatUser getNearChatUserByUsername(String username) throws SQLException
@@ -185,7 +194,7 @@ public class SQLUtils
 
         return getNearChatUserFromResultSet(rs);
     }
-    
+
     public NearChatUser getNearChatUserByID(long id) throws SQLException
     {
         String query = "SELECT rowid, * FROM " + USER_TABLE_NAME + " WHERE rowid = ?;";
@@ -209,12 +218,9 @@ public class SQLUtils
 
         while (rs.next())
         {
-            toReturn.add(new NearChatUser(rs.getLong("rowid"), rs.getString("username"), rs.getInt("age"),
-                rs.getString("gender"), rs.getString("relationship_status"), rs.getString("bio"),
-                rs.getString("interests") == null ? null : new JSONArray(rs.getString("interests")),
-                rs.getString("telegram"), rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat")));
+            toReturn.add(getNearChatUserFromResultSet(rs));
         }
-        
+
         return toReturn;
     }
 
