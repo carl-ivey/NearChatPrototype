@@ -88,11 +88,11 @@ public class NearChatUser
     }
 
     /**
-     * A function to return the distance of the furry in kilometers (in relation to another pair of coordinates).
+     * A function to return the distance of the user in kilometers (in relation to another pair of coordinates).
      *
      * @param lat1 (the latitude of the measured object in degrees)
      * @param lon1 (the longitude of the measured object in degrees)
-     * @return the distance in miles between the location of the instance of this Furry class and another pair of coordinates.
+     * @return the distance in miles between the location of the instance of this NearChatUser class and another pair of coordinates.
      */
     public double distanceFromCoords(double lat1, double lon1)
     {
