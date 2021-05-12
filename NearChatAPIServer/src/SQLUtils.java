@@ -166,7 +166,7 @@ public class SQLUtils
         ResultSet rs = stmt.executeQuery();
         return rs.next();
     }
-
+    
     private NearChatUser getNearChatUserFromResultSet(ResultSet rs) throws SQLException
     {
         String interestsStr = rs.getString("interests");
@@ -181,6 +181,7 @@ public class SQLUtils
             interestsStr == null ? null : gson.fromJson(interestsStr, listType), rs.getString("telegram"),
             rs.getBoolean("visible"), rs.getDouble("lon"), rs.getDouble("lat"));
     }
+    
 
     public NearChatUser getNearChatUserByUsername(String username) throws SQLException
     {

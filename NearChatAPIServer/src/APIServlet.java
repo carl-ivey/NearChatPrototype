@@ -75,6 +75,7 @@ public class APIServlet extends HttpServlet
                         else
                         {
                             sqlUtils.addUser(email, username, password);
+                            sqlUtils.updateAccountStringInfo(username, "visible", "1");
                             headNode.put("token", sqlUtils.generateAPITokenForAccount(username));
                             putStatus(headNode, true);
                         }
@@ -195,7 +196,7 @@ public class APIServlet extends HttpServlet
                             }
                         }
                         break;
-
+                        
                     case "update_info":
                     case "update_geo":
                         if (accessToken == null)
@@ -261,8 +262,8 @@ public class APIServlet extends HttpServlet
                                 }
 
                                 sqlUtils.updateAccountStringInfo(resolvedUsername, paramName, paramInfo);
-                                putStatus(headNode, true);
                             }
+                            putStatus(headNode, true);
                         }
                         break;
 
