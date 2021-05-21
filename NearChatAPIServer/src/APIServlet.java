@@ -31,7 +31,7 @@ public class APIServlet extends HttpServlet
     {
         super();
         sqlUtils = new SQLUtils("C://nearchat//db.sqlite");
-        if (!sqlUtils.tableExists("users"))
+        if (!sqlUtils.tableExists(SQLUtils.USER_TABLE_NAME))
             sqlUtils.initUserTables();
         // TODO Auto-generated constructor stub
     }
