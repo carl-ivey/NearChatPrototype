@@ -22,8 +22,6 @@ public class SQLUtils
     private HashMap<String, String> apiKeyList;
 
     public static final String USER_TABLE_NAME = "users";
-    public static final String SQL_LOGIN = "root";
-    public static final String SQL_PASSWORD = "";
 
     // crypto stuff.
     public static final String MD5_SALT_PART_1 = "aasdffssfasDFJFGJAFdBigChungus";

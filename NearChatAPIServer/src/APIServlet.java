@@ -125,6 +125,7 @@ public class APIServlet extends HttpServlet
                         {
                             JSONObject obj = sqlUtils.getNearChatUserByUsername(resolvedUsername).toJSONObject(true);
                             headNode.put("result", obj);
+                            putStatus(headNode, true);
                         }
                         break;
 
@@ -193,6 +194,7 @@ public class APIServlet extends HttpServlet
 
                                 JSONObject obj = tgtUser.toJSONObject(true);
                                 headNode.put("result", obj);
+                                putStatus(headNode, true);
                             }
                         }
                         break;
@@ -319,6 +321,7 @@ public class APIServlet extends HttpServlet
                                 }
 
                                 headNode.put("results", toSend);
+                                putStatus(headNode, true);
                             }
                         }
                         break;
