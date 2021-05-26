@@ -62,6 +62,13 @@ public class APIServlet extends HttpServlet
                         String username = request.getParameter("username");
                         String email = request.getParameter("email");
                         String password = request.getParameter("password");
+
+                        if (username == null || email == null || password == null)
+                        {
+                            putStatus(headNode, false, ErrorReason.ERR_PARAMETERS_MISSING_OR_INVALID);
+                            break;
+                        }
+
                         boolean usernameTaken = sqlUtils.usernameExists(username);
                         boolean emailTaken = sqlUtils.emailTaken(email);
 
@@ -103,6 +110,7 @@ public class APIServlet extends HttpServlet
                         if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                            break;
                         }
 
                         sqlUtils.deregisterAPIToken(accessToken);
@@ -113,6 +121,7 @@ public class APIServlet extends HttpServlet
                         if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                            break;
                         }
 
                         String resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
@@ -133,6 +142,7 @@ public class APIServlet extends HttpServlet
                         if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                            break;
                         }
 
                         resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
@@ -198,12 +208,13 @@ public class APIServlet extends HttpServlet
                             }
                         }
                         break;
-                        
+
                     case "update_info":
                     case "update_geo":
                         if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                            break;
                         }
 
                         resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
@@ -273,6 +284,7 @@ public class APIServlet extends HttpServlet
                         if (accessToken == null)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_ACCESS_TOKEN_EMPTY);
+                            break;
                         }
 
                         resolvedUsername = sqlUtils.getUsernameFromAPIToken(accessToken);
@@ -381,7 +393,7 @@ public class APIServlet extends HttpServlet
             return null;
         }
     }
-    
+
     private Double parseDoubleAndReturnNullIfNotDouble(String str)
     {
         try
