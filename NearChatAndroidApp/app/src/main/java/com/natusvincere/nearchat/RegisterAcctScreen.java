@@ -14,6 +14,7 @@ import java.io.IOException;
 
 public class RegisterAcctScreen extends AppCompatActivity {
 
+    private UIUtil uiUtil;
     private EditText emailEditText;
     private EditText usernameEditText;
     private EditText passwordEditText;
@@ -25,6 +26,7 @@ public class RegisterAcctScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register_acct_screen);
 
+        uiUtil = new UIUtil(this, this);
         emailEditText = (EditText) findViewById(R.id.registerAccountEmail);
         usernameEditText = (EditText) findViewById(R.id.registerAccountUsername);
         passwordEditText = (EditText) findViewById(R.id.registerAccountPassword);
@@ -41,47 +43,13 @@ public class RegisterAcctScreen extends AppCompatActivity {
         boolean boxChecked = tosCheckBox.isChecked();
         if (!boxChecked)
         {
-            runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    AlertDialog alertDialog = new AlertDialog.Builder(RegisterAcctScreen.this).create();
-                    alertDialog.setTitle("Error");
-                    alertDialog.setMessage("Please agree to the Terms and Conditions.");
-                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener()
-                    {
-                        public void onClick(DialogInterface dialog, int id)
-                        {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }
-            });
+            uiUtil.spawnDialogBox("Error", "Please agree to the Terms of Service.");
             return;
         }
 
         if (!password.matches(confirmPassword))
         {
-            runOnUiThread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    AlertDialog alertDialog = new AlertDialog.Builder(RegisterAcctScreen.this).create();
-                    alertDialog.setTitle("Error");
-                    alertDialog.setMessage("Password and confirm password contents must match.");
-                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener()
-                    {
-                        public void onClick(DialogInterface dialog, int id)
-                        {
-                            alertDialog.dismiss();
-                        }
-                    });
-                    alertDialog.show();
-                }
-            });
+            uiUtil.spawnDialogBox("Error", "Password and confirm password contents must match.");
             return;
         }
 
@@ -95,24 +63,7 @@ public class RegisterAcctScreen extends AppCompatActivity {
                     }
                     else
                     {
-                        runOnUiThread(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                AlertDialog alertDialog = new AlertDialog.Builder(RegisterAcctScreen.this).create();
-                                alertDialog.setTitle("Error");
-                                alertDialog.setMessage("Account creation unsuccessful");
-                                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener()
-                                {
-                                    public void onClick(DialogInterface dialog, int id)
-                                    {
-                                        alertDialog.dismiss();
-                                    }
-                                });
-                                alertDialog.show();
-                            }
-                        });
+                        uiUtil.spawnDialogBox("Error", "Account creation unsuccessful.");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

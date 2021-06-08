@@ -15,6 +15,8 @@ import java.io.IOException;
 public class LoginScreen extends AppCompatActivity
 {
     public static final int REGISTER_ACCOUNT_REQUEST = 2;
+
+    private UIUtil uiUtil;
     private EditText usernameEditText;
     private EditText passwordEditText;
 
@@ -23,6 +25,7 @@ public class LoginScreen extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
+        uiUtil = new UIUtil(this, this);
 
         usernameEditText = (EditText) findViewById(R.id.loginScreenUsername);
         passwordEditText = (EditText) findViewById(R.id.loginScreenPassword);
@@ -48,28 +51,13 @@ public class LoginScreen extends AppCompatActivity
                         }
                         else
                         {
-                            runOnUiThread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    AlertDialog alertDialog = new AlertDialog.Builder(LoginScreen.this).create();
-                                    alertDialog.setTitle("Error");
-                                    alertDialog.setMessage("Login unsuccessful.");
-                                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener()
-                                    {
-                                        public void onClick(DialogInterface dialog, int id)
-                                        {
-                                            alertDialog.dismiss();
-                                        }
-                                    });
-                                    alertDialog.show();
-                                }
-                            });
+                            uiUtil.spawnDialogBox("Error", "Login unsuccessful.");
                         }
-                    } catch (Exception e)
+                    }
+                    catch (Exception e)
                     {
                         e.printStackTrace();
+                        uiUtil.spawnDialogBox("Error", e.getMessage());
                     }
                 }
             });
@@ -77,11 +65,8 @@ public class LoginScreen extends AppCompatActivity
         }
         catch (Exception e)
         {
-            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-            alertDialog.setTitle("Error");
-            alertDialog.setMessage(e.getMessage());
-            alertDialog.show();
             e.printStackTrace();
+            uiUtil.spawnDialogBox("Error", e.getMessage());
             finish();
         }
     }

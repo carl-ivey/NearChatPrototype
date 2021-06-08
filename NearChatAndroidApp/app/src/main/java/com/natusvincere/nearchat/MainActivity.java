@@ -17,16 +17,13 @@ public class MainActivity extends AppCompatActivity
 {
     public static final int LOGIN_REQUEST = 1;
 
-    private void launchLoginScreenIntent()
-    {
-        Intent intent = new Intent(this, LoginScreen.class);
-        startActivityForResult(intent, LOGIN_REQUEST);
-    }
+    private UIUtil uiUtil;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        uiUtil = new UIUtil(this, this);
 
         AndroidNetworking.initialize(getApplicationContext());
 
@@ -37,7 +34,7 @@ public class MainActivity extends AppCompatActivity
         {
             if (!DataStore.apiClient.checkSessionValid())
             {
-                launchLoginScreenIntent();
+                uiUtil.launchActivity(LoginScreen.class, LOGIN_REQUEST);
             }
         }
         catch (IOException e)
@@ -58,19 +55,14 @@ public class MainActivity extends AppCompatActivity
     {
         if (requestCode == LOGIN_REQUEST)
         {
-            new Thread(new Runnable() {
+            new Thread(new Runnable()
+            {
                 @Override
                 public void run() {
                     try {
                         if (!DataStore.apiClient.checkSessionValid())
                         {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    launchLoginScreenIntent();
-                                }
-                            });
-
+                            uiUtil.launchActivity(LoginScreen.class, LOGIN_REQUEST);
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
