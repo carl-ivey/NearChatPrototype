@@ -1,5 +1,15 @@
 package com.natusvincere.nearchat.api;
 
+import android.util.Log;
+
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.ANRequest;
+import com.androidnetworking.common.ANResponse;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONArrayRequestListener;
+import com.androidnetworking.interfaces.JSONObjectRequestListener;
+import com.androidnetworking.interfaces.StringRequestListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -27,6 +37,8 @@ public class APIClient
     public String serverUrl;
     public String apiToken;
 
+    public static final String CLASS_NAME = "APIClient";
+
     public APIClient(String serverUrl)
     {
         this(serverUrl, false);
@@ -38,37 +50,50 @@ public class APIClient
         this.isDebug = isDebug;
     }
 
-    private HttpResponseData getHttpResponse(String requestMethod, Map<String, String> requestProperties) throws IOException
+    private HttpResponseData getHttpResponse(Map<String, String> requestProperties) throws IOException
     {
-        URL url = new URL(serverUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod(requestMethod);
-
-        for (String key : requestProperties.keySet())
+        ANRequest.PostRequestBuilder builder = AndroidNetworking.post(serverUrl);
+        for (String paramName : requestProperties.keySet())
         {
-            conn.setRequestProperty(key, requestProperties.get(key));
+            builder = builder.addBodyParameter(paramName, requestProperties.get(paramName));
+        }
+        boolean[] done = {false};
+        String[] responseArr = new String[1];
+
+        if (isDebug)
+        {
+            Log.d(CLASS_NAME, "properties=" + requestProperties.toString());
         }
 
-        conn.connect();
+        builder.setPriority(Priority.HIGH)
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        // do anything with response
+                        responseArr[0] = response;
+                        done[0] = true;
+                    }
+                    @Override
+                    public void onError(ANError error) {
+                        // handle error
+                        done[0] = true;
+                    }
+                });
 
-        int responseCode = conn.getResponseCode();
-        String responseData = "";
-
-        if (responseCode != 200)
+        double time = System.currentTimeMillis();
+        while (!done[0])
         {
-            return new HttpResponseData(responseCode, null);
+            if (System.currentTimeMillis() - time >= 5000)
+            {
+                Log.d(CLASS_NAME, "Timeout");
+                return new HttpResponseData(6295, responseArr[0]);
+            }
         }
 
-        Scanner scanner = new Scanner(url.openStream());
-        while (scanner.hasNext())
-        {
-            responseData += scanner.nextLine();
-        }
+        Log.d(CLASS_NAME, "Response=" + responseArr[0]);
 
-        //Close the scanner
-        scanner.close();
-
-        return new HttpResponseData(responseCode, responseData);
+        return new HttpResponseData(6295, responseArr[0]);
     }
 
     public boolean checkSessionValid() throws IOException, JSONException
@@ -88,7 +113,7 @@ public class APIClient
         requestProperties.put("mode", "login");
         requestProperties.put("username", username);
         requestProperties.put("password", password);
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
         if (responseData.responseStr == null)
             return false;
         JSONObject mainObj = new JSONObject(responseData.responseStr);
@@ -96,7 +121,7 @@ public class APIClient
         if (mainObj == null)
             return false;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
         apiToken = success ? mainObj.getString("token") : apiToken;
         return success;
     }
@@ -108,7 +133,7 @@ public class APIClient
         requestProperties.put("email", email);
         requestProperties.put("username", username);
         requestProperties.put("password", password);
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
         if (responseData.responseStr == null)
             return false;
         JSONObject mainObj = new JSONObject(responseData.responseStr);
@@ -116,7 +141,7 @@ public class APIClient
         if (mainObj == null)
             return false;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
         apiToken = success ? mainObj.getString("token") : apiToken;
         return success;
     }
@@ -129,7 +154,7 @@ public class APIClient
         Map<String, String> requestProperties = new HashMap<>();
         requestProperties.put("mode", "get_cur_userinfo");
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
         if (responseData.responseStr == null)
             return null;
         JSONObject mainObj = new JSONObject(responseData.responseStr);
@@ -137,7 +162,7 @@ public class APIClient
         if (mainObj == null)
             return null;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
         if (!success)
             return null;
         String resultStr = mainObj.getString("result");
@@ -156,7 +181,7 @@ public class APIClient
         requestProperties.put("lon", "" + longitude);
         requestProperties.put("radius", "" + radius);
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
 
         if (responseData.responseStr == null)
             return null;
@@ -166,7 +191,7 @@ public class APIClient
         if (mainObj == null)
             return null;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
 
         if (!success)
             return null;
@@ -186,7 +211,7 @@ public class APIClient
         requestProperties.put("lat", "" + latitude);
         requestProperties.put("lon", "" + longitude);
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
 
         if (responseData.responseStr == null)
             return false;
@@ -196,7 +221,7 @@ public class APIClient
         if (mainObj == null)
             return false;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
         return success;
     }
 
@@ -222,7 +247,7 @@ public class APIClient
             requestProperties.put(key, jsonObject.get(key).toString());
         }
 
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
 
         if (responseData.responseStr == null)
             return false;
@@ -232,7 +257,7 @@ public class APIClient
         if (mainObj == null)
             return false;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
         return success;
     }
 
@@ -245,7 +270,7 @@ public class APIClient
         requestProperties.put("mode", "get_userinfo");
         requestProperties.put("id", "" + id);
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
 
         if (responseData.responseStr == null)
             return null;
@@ -255,7 +280,7 @@ public class APIClient
         if (mainObj == null)
             return null;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
         if (!success)
             return null;
         String resultStr = mainObj.getString("result");
@@ -272,7 +297,7 @@ public class APIClient
         requestProperties.put("mode", "get_userinfo");
         requestProperties.put("username", "" + username);
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
 
         if (responseData.responseStr == null)
             return null;
@@ -282,7 +307,7 @@ public class APIClient
         if (mainObj == null)
             return null;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
         if (!success)
             return null;
         String resultStr = mainObj.getString("result");
@@ -299,7 +324,7 @@ public class APIClient
         requestProperties.put("mode", "logout");
         requestProperties.put("token", this.apiToken);
 
-        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+        HttpResponseData responseData = getHttpResponse(requestProperties);
 
         if (responseData.responseStr == null)
             return false;
@@ -309,7 +334,7 @@ public class APIClient
         if (mainObj == null)
             return false;
 
-        boolean success = mainObj.getBoolean("success");
+        boolean success = mainObj.getString("status").equals("success");
         return success;
     }
 }
