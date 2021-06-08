@@ -5,9 +5,8 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.TextView;
+import android.widget.EditText;
 
 import org.json.JSONException;
 
@@ -15,10 +14,9 @@ import java.io.IOException;
 
 public class LoginScreen extends AppCompatActivity
 {
-
     public static final int REGISTER_ACCOUNT_REQUEST = 2;
-    private TextView usernameTextView;
-    private TextView passwordTextView;
+    private EditText usernameEditText;
+    private EditText passwordEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -26,16 +24,16 @@ public class LoginScreen extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
 
-        usernameTextView = (TextView) findViewById(R.id.loginScreenUsername);
-        passwordTextView = (TextView) findViewById(R.id.loginScreenPassword);
+        usernameEditText = (EditText) findViewById(R.id.loginScreenUsername);
+        passwordEditText = (EditText) findViewById(R.id.loginScreenPassword);
     }
 
     public void checkLoginDetails(View view)
     {
         try
         {
-            String username = usernameTextView.getText().toString();
-            String password = passwordTextView.getText().toString();
+            String username = usernameEditText.getText().toString();
+            String password = passwordEditText.getText().toString();
 
             Thread thread = new Thread(new Runnable()
             {

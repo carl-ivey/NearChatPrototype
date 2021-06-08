@@ -73,7 +73,7 @@
         app:layout_constraintTop_toBottomOf="@+id/registerAccountPassword" />
 
     <CheckBox
-        android:id="@+id/checkBox"
+        android:id="@+id/registerAccountTosCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -87,11 +87,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:onClick="checkRegistrationDetails"
         android:text="Create Account"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/checkBox" />
+        app:layout_constraintTop_toBottomOf="@+id/registerAccountTosCheckBox" />
 
 </android.support.constraint.ConstraintLayout>

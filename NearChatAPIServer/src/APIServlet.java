@@ -48,7 +48,7 @@ public class APIServlet extends HttpServlet
         String mode = request.getParameter("mode");
         String accessToken = request.getParameter("token");
 
-        if (mode == null)
+        if (mode == null || mode.length() == 0)
         {
             putStatus(headNode, false, ErrorReason.ERR_MODE_EMPTY);
         }
@@ -63,7 +63,8 @@ public class APIServlet extends HttpServlet
                         String email = request.getParameter("email");
                         String password = request.getParameter("password");
 
-                        if (username == null || email == null || password == null)
+                        if (username == null || email == null || password == null || username.trim().length() == 0
+                            || email.trim().length() == 0 || password.trim().length() == 0)
                         {
                             putStatus(headNode, false, ErrorReason.ERR_PARAMETERS_MISSING_OR_INVALID);
                             break;
