@@ -71,6 +71,17 @@ public class APIClient
         return new HttpResponseData(responseCode, responseData);
     }
 
+    public boolean checkSessionValid() throws IOException, JSONException
+    {
+        return getLoggedInUser() != null;
+    }
+
+    public boolean setToken(String apiToken) throws IOException, JSONException
+    {
+        this.apiToken = apiToken;
+        return checkSessionValid();
+    }
+
     public boolean doLogin(String username, String password) throws IOException, JSONException
     {
         Map<String, String> requestProperties = new HashMap<>();
@@ -277,5 +288,28 @@ public class APIClient
         String resultStr = mainObj.getString("result");
         JSONObject resultObj = new JSONObject(resultStr);
         return resultObj == null ? null : NearChatUser.fromJSONObject(resultObj);
+    }
+
+    public boolean logOut() throws IOException, JSONException
+    {
+        if (this.apiToken == null)
+            return false;
+
+        Map<String, String> requestProperties = new HashMap<>();
+        requestProperties.put("mode", "logout");
+        requestProperties.put("token", this.apiToken);
+
+        HttpResponseData responseData = getHttpResponse("GET", requestProperties);
+
+        if (responseData.responseStr == null)
+            return false;
+
+        JSONObject mainObj = new JSONObject(responseData.responseStr);
+
+        if (mainObj == null)
+            return false;
+
+        boolean success = mainObj.getBoolean("success");
+        return success;
     }
 }
