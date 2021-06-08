@@ -1,4 +1,4 @@
-package com.example.nearchat;
+package com.natusvincere.nearchat;
 
 import org.junit.Test;
 
