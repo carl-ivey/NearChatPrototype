@@ -30,21 +30,28 @@ public class MainActivity extends AppCompatActivity
         if (DataStore.apiClient == null)
             DataStore.apiClient = new APIClient("http://launchtestrun.zapto.org:42069/NearChatAPIServer/APIServlet", true);
 
-        try
+        new Thread(new Runnable()
         {
-            if (!DataStore.apiClient.checkSessionValid())
+            @Override
+            public void run()
             {
-                uiUtil.launchActivity(LoginScreen.class, LOGIN_REQUEST);
+                try
+                {
+                    if (!DataStore.apiClient.checkSessionValid())
+                    {
+                        uiUtil.launchActivity(LoginScreen.class, LOGIN_REQUEST);
+                    }
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+                catch (JSONException e)
+                {
+                    e.printStackTrace();
+                }
             }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
+        }).start();
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
         setContentView(R.layout.activity_main);

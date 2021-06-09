@@ -33,42 +33,34 @@ public class LoginScreen extends AppCompatActivity
 
     public void checkLoginDetails(View view)
     {
-        try
-        {
-            String username = usernameEditText.getText().toString();
-            String password = passwordEditText.getText().toString();
+        String username = usernameEditText.getText().toString();
+        String password = passwordEditText.getText().toString();
 
-            Thread thread = new Thread(new Runnable()
+        Thread thread = new Thread(new Runnable()
+        {
+            @Override
+            public void run()
             {
-                @Override
-                public void run()
+                try
                 {
-                    try
+                    if (DataStore.apiClient.doLogin(username, password))
                     {
-                        if (DataStore.apiClient.doLogin(username, password))
-                        {
-                            finish();
-                        }
-                        else
-                        {
-                            uiUtil.spawnDialogBox("Error", "Login unsuccessful.");
-                        }
+                        finish();
                     }
-                    catch (Exception e)
+                    else
                     {
-                        e.printStackTrace();
-                        uiUtil.spawnDialogBox("Error", e.getMessage());
+                        uiUtil.spawnDialogBox("Error", "Login unsuccessful.");
                     }
                 }
-            });
-            thread.start();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            uiUtil.spawnDialogBox("Error", e.getMessage());
-            finish();
-        }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    uiUtil.spawnDialogBox("Error", e.getMessage());
+                    finish();
+                }
+            }
+        });
+        thread.start();
     }
 
     public void launchRegisterAccountScreen(View view)
