@@ -2,10 +2,12 @@ package com.natusvincere.nearchat;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -23,6 +25,7 @@ import im.delight.android.location.SimpleLocation;
 public class MainActivity extends AppCompatActivity
 {
     public static final int LOGIN_REQUEST = 1;
+    public static final int PROFILE_DETAILS_REQUEST = 2;
 
     private UIUtil uiUtil;
     private SimpleLocation location;
@@ -75,6 +78,15 @@ public class MainActivity extends AppCompatActivity
         setTitle(String.format("Nearby Users (%.1f km)", DataStore.searchDistance));
 
         proximityListView = (ListView) findViewById(R.id.proximityListView);
+
+        proximityListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long arg3) {
+                NearChatUser selectedUser = DataStore.nearbyUsers.get(position);
+                uiUtil.launchActivityWithNearChatUser(ProfileDetailsActivity.class, PROFILE_DETAILS_REQUEST, selectedUser);
+            }
+        });
+
         updateProximityList();
 
         /*

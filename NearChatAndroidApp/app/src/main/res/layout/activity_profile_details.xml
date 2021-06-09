@@ -133,5 +133,5 @@
         app:layout_constraintHorizontal_bias="0.956"
         app:layout_constraintStart_toEndOf="@+id/profileDetailsUsername"
         app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@tools:sample/avatars" />
+        app:srcCompat="@drawable/sample_pfp" />
 </android.support.constraint.ConstraintLayout>

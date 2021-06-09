@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
+import com.natusvincere.nearchat.api.NearChatUser;
+
 public class UIUtil
 {
     private AppCompatActivity activity;
@@ -35,6 +37,25 @@ public class UIUtil
                     }
                 });
                 alertDialog.show();
+            }
+        });
+    }
+
+    public NearChatUser getContextNearChatUser()
+    {
+        return (NearChatUser) activity.getIntent().getSerializableExtra("NearChatUser");
+    }
+
+    public void launchActivityWithNearChatUser(Class<?> cls, int requestId, NearChatUser nearChatUser)
+    {
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Intent intent = new Intent(context, cls);
+                intent.putExtra("NearChatUser", nearChatUser);
+                activity.startActivityForResult(intent, requestId);
             }
         });
     }
