@@ -5,25 +5,42 @@ import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import com.androidnetworking.AndroidNetworking;
 import com.natusvincere.nearchat.api.APIClient;
+import com.natusvincere.nearchat.api.NearChatUser;
 
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.List;
+
+import im.delight.android.location.SimpleLocation;
 
 public class MainActivity extends AppCompatActivity
 {
     public static final int LOGIN_REQUEST = 1;
 
     private UIUtil uiUtil;
+    private SimpleLocation location;
+    private ListView proximityListView;
+    private ArrayAdapter<NearChatUser> itemsAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         uiUtil = new UIUtil(this, this);
+        location = new SimpleLocation(this);
+
+        if (!location.hasLocationEnabled())
+        {
+            // ask the user to enable location access
+            SimpleLocation.openSettings(this);
+        }
 
         AndroidNetworking.initialize(getApplicationContext());
 
@@ -55,6 +72,21 @@ public class MainActivity extends AppCompatActivity
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
         setContentView(R.layout.activity_main);
+        setTitle(String.format("Nearby Users (%.1f km)", DataStore.searchDistance));
+
+        proximityListView = (ListView) findViewById(R.id.proximityListView);
+        updateProximityList();
+
+        /*
+        location.setListener(new SimpleLocation.Listener() {
+
+            public void onPositionChanged() {
+                double lat = location.getLatitude();
+                double lon = location.getLongitude();
+            }
+
+        });
+         */
     }
 
     @Override
@@ -71,6 +103,11 @@ public class MainActivity extends AppCompatActivity
                         {
                             uiUtil.launchActivity(LoginScreen.class, LOGIN_REQUEST);
                         }
+                        else
+                        {
+                            DataStore.nearbyUsers = DataStore.apiClient.getNearbyUsers(0.0, 0.0, DataStore.searchDistance);
+                            updateProximityList();
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch (JSONException e) {
@@ -79,5 +116,24 @@ public class MainActivity extends AppCompatActivity
                 }
             }).start();
         }
+    }
+
+    private void updateProximityList()
+    {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                int index = proximityListView.getFirstVisiblePosition(); //This changed
+                View v = proximityListView.getChildAt(0);
+                int top = (v == null) ? 0 : v.getTop();
+                itemsAdapter = new ArrayAdapter<>
+                        (MainActivity.this, android.R.layout.simple_list_item_1,
+                                DataStore.nearbyUsers);
+                proximityListView.setAdapter(itemsAdapter);
+                itemsAdapter.notifyDataSetChanged();
+                proximityListView.setSelectionFromTop(index, top);
+            }
+        });
+
     }
 }

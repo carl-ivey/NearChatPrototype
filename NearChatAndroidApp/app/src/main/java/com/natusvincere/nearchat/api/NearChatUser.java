@@ -79,7 +79,7 @@ public class NearChatUser implements Serializable
     @Override
     public String toString()
     {
-        return String.format("id=%d, username=%s", this.id, this.username);
+        return this.username;
     }
 
     /**
