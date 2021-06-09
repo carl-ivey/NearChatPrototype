@@ -24,7 +24,7 @@
         android:id="@+id/profileDetailsInterestsList"
         android:layout_width="357dp"
         android:layout_height="120dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:text="- Interest 1\n- Interest 2\n- Interest 3"
         android:textColor="#000000"
         android:textSize="18sp"
@@ -64,13 +64,13 @@
         android:id="@+id/profileDetailsGender"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="104dp"
         android:text="Sample Gender Text"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.107"
+        app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profileDetailsUsername" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/profileDetailsAge"
@@ -80,7 +80,7 @@
         android:text="Age: xyz"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.078"
+        app:layout_constraintHorizontal_bias="0.076"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/profileDetailsGender" />
 
@@ -100,7 +100,7 @@
         android:id="@+id/profileDetailsBiographyLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="112dp"
+        android:layout_marginTop="56dp"
         android:text="ABOUT ME"
         android:textColor="#000000"
         android:textSize="19sp"
@@ -119,7 +119,6 @@
         android:textColor="#000000"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/profileDetailsBiographyLabel" />
 
