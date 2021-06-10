@@ -9,6 +9,12 @@ import android.widget.TextView;
 
 import com.natusvincere.nearchat.api.NearChatUser;
 
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class EditProfileDetailsActivity extends AppCompatActivity
 {
     private UIUtil uiUtil;
@@ -62,6 +68,37 @@ public class EditProfileDetailsActivity extends AppCompatActivity
 
     public void updateProfileAndExitActivity(View view)
     {
-
+        selectedUser.gender = genderEditText.getText().toString();
+        try
+        {
+            selectedUser.age = Integer.parseInt(ageEditText.getText().toString());
+        }
+        catch (NumberFormatException nfe)
+        {
+            uiUtil.spawnDialogBox("Error", "Age must be an integer.");
+            return;
+        }
+        selectedUser.relationship_status = relationshipStatusEditText.getText().toString();
+        selectedUser.telegram = telegramEditText.getText().toString();
+        selectedUser.bio = bioEditText.getText().toString();
+        selectedUser.interests = Arrays.asList(interestsEditText.getText().toString().split("\n"));
+        new Thread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    DataStore.apiClient.updateUserFieldsFromClass(selectedUser);
+                    uiUtil.finishActivity();
+                } catch (IOException ioException) {
+                    uiUtil.spawnDialogBox("Error", "Exception: " + ioException);
+                    ioException.printStackTrace();
+                } catch (JSONException jsonException) {
+                    uiUtil.spawnDialogBox("Error", "Exception: " + jsonException);
+                    jsonException.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

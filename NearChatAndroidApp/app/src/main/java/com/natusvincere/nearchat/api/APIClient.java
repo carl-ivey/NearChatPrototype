@@ -50,7 +50,7 @@ public class APIClient
         this.isDebug = isDebug;
     }
 
-    private HttpResponseData getHttpResponse(Map<String, String> requestProperties) throws IOException
+    private String getHttpResponse(Map<String, String> requestProperties, double timeOut) throws IOException
     {
         ANRequest.PostRequestBuilder builder = AndroidNetworking.post(serverUrl);
         for (String paramName : requestProperties.keySet())
@@ -84,16 +84,16 @@ public class APIClient
         double time = System.currentTimeMillis();
         while (!done[0])
         {
-            if (System.currentTimeMillis() - time >= 5000)
+            if (System.currentTimeMillis() - time >= timeOut)
             {
                 Log.d(CLASS_NAME, "Timeout");
-                return new HttpResponseData(6295, responseArr[0]);
+                return responseArr[0];
             }
         }
 
         Log.d(CLASS_NAME, "RequestResponse=" + responseArr[0]);
 
-        return new HttpResponseData(6295, responseArr[0]);
+        return responseArr[0];
     }
 
     public boolean checkSessionValid() throws IOException, JSONException
@@ -113,10 +113,10 @@ public class APIClient
         requestProperties.put("mode", "login");
         requestProperties.put("username", username);
         requestProperties.put("password", password);
-        HttpResponseData responseData = getHttpResponse(requestProperties);
-        if (responseData.responseStr == null)
+        String responseData = getHttpResponse(requestProperties, 3000);
+        if (responseData == null)
             return false;
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return false;
@@ -133,10 +133,10 @@ public class APIClient
         requestProperties.put("email", email);
         requestProperties.put("username", username);
         requestProperties.put("password", password);
-        HttpResponseData responseData = getHttpResponse(requestProperties);
-        if (responseData.responseStr == null)
+        String responseData = getHttpResponse(requestProperties, 3000);
+        if (responseData == null)
             return false;
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return false;
@@ -154,10 +154,10 @@ public class APIClient
         Map<String, String> requestProperties = new HashMap<>();
         requestProperties.put("mode", "get_cur_userinfo");
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse(requestProperties);
-        if (responseData.responseStr == null)
+        String responseData = getHttpResponse(requestProperties, 3000);
+        if (responseData == null)
             return null;
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return null;
@@ -181,12 +181,12 @@ public class APIClient
         requestProperties.put("lon", "" + longitude);
         requestProperties.put("radius", "" + radius);
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse(requestProperties);
+        String responseData = getHttpResponse(requestProperties, 3000);
 
-        if (responseData.responseStr == null)
+        if (responseData == null)
             return null;
 
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return null;
@@ -211,12 +211,12 @@ public class APIClient
         requestProperties.put("lat", "" + latitude);
         requestProperties.put("lon", "" + longitude);
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse(requestProperties);
+        String responseData = getHttpResponse(requestProperties, 3000);
 
-        if (responseData.responseStr == null)
+        if (responseData == null)
             return false;
 
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return false;
@@ -247,12 +247,12 @@ public class APIClient
             requestProperties.put(key, jsonObject.get(key).toString());
         }
 
-        HttpResponseData responseData = getHttpResponse(requestProperties);
+        String responseData = getHttpResponse(requestProperties, 3000);
 
-        if (responseData.responseStr == null)
+        if (responseData == null)
             return false;
 
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return false;
@@ -270,12 +270,12 @@ public class APIClient
         requestProperties.put("mode", "get_userinfo");
         requestProperties.put("id", "" + id);
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse(requestProperties);
+        String responseData = getHttpResponse(requestProperties, 3000);
 
-        if (responseData.responseStr == null)
+        if (responseData == null)
             return null;
 
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return null;
@@ -297,12 +297,12 @@ public class APIClient
         requestProperties.put("mode", "get_userinfo");
         requestProperties.put("username", "" + username);
         requestProperties.put("token", this.apiToken);
-        HttpResponseData responseData = getHttpResponse(requestProperties);
+        String responseData = getHttpResponse(requestProperties, 3000);
 
-        if (responseData.responseStr == null)
+        if (responseData == null)
             return null;
 
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return null;
@@ -324,12 +324,12 @@ public class APIClient
         requestProperties.put("mode", "logout");
         requestProperties.put("token", this.apiToken);
 
-        HttpResponseData responseData = getHttpResponse(requestProperties);
+        String responseData = getHttpResponse(requestProperties, 3000);
 
-        if (responseData.responseStr == null)
+        if (responseData == null)
             return false;
 
-        JSONObject mainObj = new JSONObject(responseData.responseStr);
+        JSONObject mainObj = new JSONObject(responseData);
 
         if (mainObj == null)
             return false;

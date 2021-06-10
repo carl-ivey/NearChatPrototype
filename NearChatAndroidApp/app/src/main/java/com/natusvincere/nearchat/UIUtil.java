@@ -72,4 +72,16 @@ public class UIUtil
             }
         });
     }
+
+    public void finishActivity()
+    {
+        activity.runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                activity.finish();
+            }
+        });
+    }
 }
