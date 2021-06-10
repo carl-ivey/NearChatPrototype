@@ -62,7 +62,7 @@ public class APIClient
 
         if (isDebug)
         {
-            Log.d(CLASS_NAME, "properties=" + requestProperties.toString());
+            Log.d(CLASS_NAME, "RequestProperties=" + requestProperties.toString());
         }
 
         builder.setPriority(Priority.HIGH)
@@ -91,7 +91,7 @@ public class APIClient
             }
         }
 
-        Log.d(CLASS_NAME, "Response=" + responseArr[0]);
+        Log.d(CLASS_NAME, "RequestResponse=" + responseArr[0]);
 
         return new HttpResponseData(6295, responseArr[0]);
     }

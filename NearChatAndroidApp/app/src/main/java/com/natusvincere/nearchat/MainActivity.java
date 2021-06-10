@@ -172,7 +172,22 @@ public class MainActivity extends AppCompatActivity
         switch (id)
         {
             case R.id.action_refresh:
-                updateProximityList();
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        try {
+                            DataStore.nearbyUsers = DataStore.apiClient.getNearbyUsers(0.0, 0.0, DataStore.searchDistance);
+                            updateProximityList();
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                        } catch (JSONException jsonException) {
+                            jsonException.printStackTrace();
+                        }
+                    }
+                }).start();
+
                 break;
 
             case R.id.action_editprofile:

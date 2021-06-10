@@ -11,6 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
+        android:onClick="openTelegramLink"
         android:text="Telegram: @MyUserName"
         android:textColor="#2196F3"
         android:textSize="16sp"
