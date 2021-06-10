@@ -1,8 +1,11 @@
 package com.natusvincere.nearchat;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.natusvincere.nearchat.api.NearChatUser;
@@ -17,6 +20,7 @@ public class ProfileDetailsActivity extends AppCompatActivity
     private TextView telegramTextView;
     private TextView bioTextView;
     private TextView interestsTextView;
+    private NearChatUser selectedUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -34,13 +38,12 @@ public class ProfileDetailsActivity extends AppCompatActivity
         interestsTextView = (TextView) findViewById(R.id.profileDetailsInterestsList);
 
         uiUtil = new UIUtil(this, this);
+        selectedUser = uiUtil.getContextNearChatUser();
         updateTextViews();
     }
 
     public void updateTextViews()
     {
-        NearChatUser selectedUser = uiUtil.getContextNearChatUser();
-
         usernameTextView.setText(selectedUser.username);
         genderTextView.setText(selectedUser.gender == null ? "Unknown gender" : selectedUser.gender);
         ageTextView.setText(selectedUser.age == 0 ? "Unknown age" : "Age " + selectedUser.age);
@@ -56,9 +59,21 @@ public class ProfileDetailsActivity extends AppCompatActivity
             String interestsTextViewText = "";
             for (String interest : selectedUser.interests)
             {
-                interestsTextViewText += "interest\n";
+                interestsTextViewText += interest + "\n";
             }
             interestsTextView.setText(interestsTextViewText);
         }
+    }
+
+    public void openTelegramLink(View view)
+    {
+        if (selectedUser == null || selectedUser.telegram == null)
+        {
+            return;
+        }
+        if (selectedUser.telegram.trim().length() == 0)
+            return;
+        Intent telegramIntent = new Intent(Intent.ACTION_VIEW , Uri.parse("https://telegram.me/" + selectedUser.telegram));
+        startActivity(telegramIntent);
     }
 }
