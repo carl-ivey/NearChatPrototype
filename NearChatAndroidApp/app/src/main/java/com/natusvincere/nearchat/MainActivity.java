@@ -6,6 +6,8 @@ import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity
 {
     public static final int LOGIN_REQUEST = 1;
     public static final int PROFILE_DETAILS_REQUEST = 2;
+    public static final int PROFILE_EDIT_DETAILS_REQUEST = 3;
 
     private UIUtil uiUtil;
     private SimpleLocation location;
@@ -147,5 +150,87 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.menu_mainmenu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu)
+    {
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        int id = item.getItemId();
+        switch (id)
+        {
+            case R.id.action_refresh:
+                updateProximityList();
+                break;
+
+            case R.id.action_editprofile:
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        try
+                        {
+                            NearChatUser loggedInUser = DataStore.apiClient.getLoggedInUser();
+                            uiUtil.launchActivityWithNearChatUser(EditProfileDetailsActivity.class, PROFILE_EDIT_DETAILS_REQUEST, loggedInUser);
+                        }
+                        catch (IOException ioException)
+                        {
+                            ioException.printStackTrace();
+                        }
+                        catch (JSONException jsonException)
+                        {
+                            jsonException.printStackTrace();
+                        }
+                    }
+                }).start();
+                break;
+
+            case R.id.action_settings:
+                Log.d("mainmenu","Settings clicked");
+                break;
+
+            case R.id.action_logout:
+                new Thread(new Runnable()
+                {
+                    @Override
+                    public void run() {
+                        try
+                        {
+                            DataStore.apiClient.logOut();
+                            uiUtil.launchActivity(LoginScreen.class, LOGIN_REQUEST);
+                        }
+                        catch (IOException ioException)
+                        {
+                            ioException.printStackTrace();
+                        }
+                        catch (JSONException jsonException)
+                        {
+                            jsonException.printStackTrace();
+                        }
+                    }
+                }).start();
+                break;
+
+            case R.id.action_about:
+                break;
+
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

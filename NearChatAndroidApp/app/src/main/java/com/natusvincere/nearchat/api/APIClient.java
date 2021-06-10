@@ -335,6 +335,7 @@ public class APIClient
             return false;
 
         boolean success = mainObj.getString("status").equals("success");
+        apiToken = success ? null : apiToken;
         return success;
     }
 }
