@@ -8,9 +8,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        android:theme="@style/Theme.NearChat">
-        <activity android:name=".ProfileDetailsActivity"></activity>
+        android:theme="@style/Theme.NearChat"
+        android:usesCleartextTraffic="true">
+        <activity android:name=".EditProfileDetailsActivity"></activity>
+        <activity android:name=".ProfileDetailsActivity" />
         <activity android:name=".RegisterAcctScreen" />
         <activity android:name=".LoginScreen" />
         <activity android:name=".MainActivity">
@@ -21,8 +22,8 @@
             </intent-filter>
         </activity>
     </application>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 </manifest>

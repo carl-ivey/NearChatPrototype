@@ -7,7 +7,8 @@ import android.widget.TextView;
 
 import com.natusvincere.nearchat.api.NearChatUser;
 
-public class ProfileDetailsActivity extends AppCompatActivity {
+public class ProfileDetailsActivity extends AppCompatActivity
+{
     private UIUtil uiUtil;
     private TextView usernameTextView;
     private TextView genderTextView;
@@ -18,7 +19,8 @@ public class ProfileDetailsActivity extends AppCompatActivity {
     private TextView interestsTextView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_details);
         setTitle("User Info");
@@ -32,6 +34,11 @@ public class ProfileDetailsActivity extends AppCompatActivity {
         interestsTextView = (TextView) findViewById(R.id.profileDetailsInterestsList);
 
         uiUtil = new UIUtil(this, this);
+        updateTextViews();
+    }
+
+    public void updateTextViews()
+    {
         NearChatUser selectedUser = uiUtil.getContextNearChatUser();
 
         usernameTextView.setText(selectedUser.username);
@@ -40,6 +47,18 @@ public class ProfileDetailsActivity extends AppCompatActivity {
         relationshipStatusTextView.setText(selectedUser.relationship_status == null ? "Unknown relationship status" : selectedUser.relationship_status);
         telegramTextView.setText(selectedUser.telegram == null ? "Unknown Telegram" : "Telegram: " + selectedUser.telegram);
         bioTextView.setText(selectedUser.bio == null ? "-" : selectedUser.bio);
-        interestsTextView.setText(selectedUser.interests == null ? "-" : selectedUser.interests.toString());
+        if (selectedUser.interests == null)
+        {
+            interestsTextView.setText("-");
+        }
+        else
+        {
+            String interestsTextViewText = "";
+            for (String interest : selectedUser.interests)
+            {
+                interestsTextViewText += "interest\n";
+            }
+            interestsTextView.setText(interestsTextViewText);
+        }
     }
 }

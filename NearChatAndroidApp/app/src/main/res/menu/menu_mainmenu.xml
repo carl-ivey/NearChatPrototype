@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.natusvincere.nearchat.MainActivity">
+
+    <item
+        android:id="@+id/action_refresh"
+        android:title="Refresh Results"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_editprofile"
+        android:title="Edit Profile"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="Settings"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_logout"
+        android:title="Logout"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_about"
+        android:title="About"
+        app:showAsAction="never"/>
+
+
+</menu>
